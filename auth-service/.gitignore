@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+
+# STS / Eclipse
+.classpath
+.project
+.settings/
+.springBeans
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Application Secrets
+application-local.yml
+application-prod.yml
+
+# Java
+*.class
+
+# Generated
+bin/
+out/
+target/
