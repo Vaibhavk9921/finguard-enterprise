@@ -5,14 +5,10 @@
 .settings/
 
 # Gradle
-.gradle/
-build/
 **/.gradle/
 **/build/
 
 # Java
-bin/
-out/
 **/bin/
 **/out/
 
@@ -23,7 +19,3 @@ out/
 
 # Logs
 *.log
-
-# OS Files
-.DS_Store
-Thumbs.db
