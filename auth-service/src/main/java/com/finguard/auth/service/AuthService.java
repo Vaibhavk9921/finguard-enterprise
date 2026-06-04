@@ -4,6 +4,7 @@ import com.finguard.auth.dto.LoginRequest;
 import com.finguard.auth.dto.RegisterRequest;
 import com.finguard.auth.entity.Role;
 import com.finguard.auth.entity.User;
+import com.finguard.auth.exception.InvalidCredentialsException;
 import com.finguard.auth.repository.UserRepository;
 import com.finguard.auth.security.JwtUtil;
 
@@ -43,7 +44,7 @@ public class AuthService {
 
 	public String login(LoginRequest request) {
 		User user = userRepository.findByEmail(request.getEmail())
-				.orElseThrow(() -> new RuntimeException("Invalid Credentials"));
+				.orElseThrow(() -> new InvalidCredentialsException("Invalid Credentials"));
 		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 			throw new RuntimeException("Invalid Credentials");
 		}
