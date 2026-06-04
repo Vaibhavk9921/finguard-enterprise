@@ -1,5 +1,6 @@
 package com.finguard.auth.controller;
 
+import com.finguard.auth.dto.ApiResponse;
 import com.finguard.auth.dto.LoginRequest;
 import com.finguard.auth.dto.LoginResponse;
 import com.finguard.auth.dto.RegisterRequest;
@@ -23,7 +24,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	public String register(@Valid @RequestBody RegisterRequest request) {
+	public ApiResponse<Void> register(@Valid @RequestBody RegisterRequest request) {
 
 		return authService.register(request);
 	}

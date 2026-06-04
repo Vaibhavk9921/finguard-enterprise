@@ -1,5 +1,6 @@
 package com.finguard.auth.service;
 
+import com.finguard.auth.dto.ApiResponse;
 import com.finguard.auth.dto.LoginRequest;
 import com.finguard.auth.dto.RegisterRequest;
 import com.finguard.auth.entity.Role;
@@ -25,10 +26,10 @@ public class AuthService {
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public String register(RegisterRequest request) {
+	public ApiResponse<Void> register(RegisterRequest request) {
 
 		if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-			return "Email already exists";
+			throw new RuntimeException("Email Already Exsists");
 		}
 		User user = new User();
 
@@ -39,7 +40,7 @@ public class AuthService {
 
 		userRepository.save(user);
 
-		return "User registered successfully";
+		return new ApiResponse<>(true, "User Registered Sucessfully", null);
 	}
 
 	public String login(LoginRequest request) {
