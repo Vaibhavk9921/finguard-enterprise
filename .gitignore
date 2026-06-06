@@ -1,0 +1,21 @@
+# Eclipse / STS
+.metadata/
+.project
+.classpath
+.settings/
+
+# Gradle
+**/.gradle/
+**/build/
+
+# Java
+**/bin/
+**/out/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
