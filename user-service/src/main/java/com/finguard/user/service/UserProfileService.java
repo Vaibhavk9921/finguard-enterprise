@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import com.finguard.user.dto.UserProfileRequest;
 import com.finguard.user.entity.KycStatus;
 import com.finguard.user.entity.UserProfile;
+import com.finguard.user.exception.ProfileAlreadyExistsException;
+import com.finguard.user.exception.ResourceNotFoundException;
 import com.finguard.user.repository.UserProfileRepository;
 
 @Service
@@ -17,7 +19,7 @@ public class UserProfileService {
 
 	public UserProfile createProfile(UserProfileRequest request) {
 		if (repository.findByUserId(request.getUserId()).isPresent()) {
-			throw new RuntimeException("Profile already exists");
+			throw new ProfileAlreadyExistsException("Profile already exists");
 		}
 		UserProfile profile = new UserProfile();
 		profile.setUserId(request.getUserId());
@@ -37,7 +39,7 @@ public class UserProfileService {
 	public UserProfile updateProfile(Long userId, UserProfileRequest request) {
 
 		UserProfile profile = repository.findByUserId(userId)
-				.orElseThrow(() -> new RuntimeException("Profile not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
 
 		profile.setFullName(request.getFullName());
 		profile.setPhoneNumber(request.getPhoneNumber());
@@ -45,6 +47,20 @@ public class UserProfileService {
 		profile.setAadharNumber(request.getAadharNumber());
 		profile.setAddress(request.getAddress());
 
+		return repository.save(profile);
+	}
+
+	public UserProfile approveKyc(Long userId) {
+		UserProfile profile = repository.findByUserId(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("Profile not Found"));
+		profile.setKycStatus(KycStatus.APPROVED);
+		return repository.save(profile);
+	}
+
+	public UserProfile rejectKyc(Long userId) {
+		UserProfile profile = repository.findByUserId(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("Profile not Found"));
+		profile.setKycStatus(KycStatus.REJECTED);
 		return repository.save(profile);
 	}
 }
