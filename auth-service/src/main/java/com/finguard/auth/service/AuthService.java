@@ -3,6 +3,7 @@ package com.finguard.auth.service;
 import com.finguard.auth.dto.ApiResponse;
 import com.finguard.auth.dto.LoginRequest;
 import com.finguard.auth.dto.RegisterRequest;
+import com.finguard.auth.dto.UserValidationResponse;
 import com.finguard.auth.entity.Role;
 import com.finguard.auth.entity.User;
 import com.finguard.auth.exception.InvalidCredentialsException;
@@ -50,5 +51,16 @@ public class AuthService {
 			throw new RuntimeException("Invalid Credentials");
 		}
 		return jwtUtil.generateToken(user.getEmail());
+	}
+
+	public UserValidationResponse validateUser(Long userId) {
+
+		User user = userRepository.findById(userId).orElse(null);
+
+		if (user == null) {
+			return new UserValidationResponse(null, null, false);
+		}
+
+		return new UserValidationResponse(user.getId(), user.getEmail(), true);
 	}
 }

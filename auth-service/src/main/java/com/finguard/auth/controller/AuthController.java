@@ -4,6 +4,7 @@ import com.finguard.auth.dto.ApiResponse;
 import com.finguard.auth.dto.LoginRequest;
 import com.finguard.auth.dto.LoginResponse;
 import com.finguard.auth.dto.RegisterRequest;
+import com.finguard.auth.dto.UserValidationResponse;
 import com.finguard.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +34,11 @@ public class AuthController {
 	public LoginResponse login(@RequestBody LoginRequest request) {
 		String token = authService.login(request);
 		return new LoginResponse(token);
+	}
+
+	@GetMapping("/validate/{userId}")
+	public UserValidationResponse validateUser(@PathVariable("userId") Long userId) {
+
+		return authService.validateUser(userId);
 	}
 }

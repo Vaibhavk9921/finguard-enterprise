@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.finguard.user.dto.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -33,5 +36,11 @@ public class GlobalExceptionHandler {
 		response.put("message", ex.getMessage());
 
 		return response;
+	}
+
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
+		ApiResponse<Void> response = new ApiResponse<>(false, ex.getMessage(), null);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
 }

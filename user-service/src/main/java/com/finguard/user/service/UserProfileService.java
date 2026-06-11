@@ -1,27 +1,42 @@
 package com.finguard.user.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.finguard.user.dto.UserProfileRequest;
+import com.finguard.user.dto.UserValidationResponse;
 import com.finguard.user.entity.KycStatus;
 import com.finguard.user.entity.UserProfile;
 import com.finguard.user.exception.ProfileAlreadyExistsException;
 import com.finguard.user.exception.ResourceNotFoundException;
+import com.finguard.user.exception.UserNotFoundException;
+import com.finguard.user.feign.AuthServiceClient;
 import com.finguard.user.repository.UserProfileRepository;
 
 @Service
 public class UserProfileService {
 	private final UserProfileRepository repository;
+	@Autowired
+	private AuthServiceClient authServiceClient;
 
 	public UserProfileService(UserProfileRepository repository) {
 		this.repository = repository;
 	}
 
 	public UserProfile createProfile(UserProfileRequest request) {
+
 		if (repository.findByUserId(request.getUserId()).isPresent()) {
 			throw new ProfileAlreadyExistsException("Profile already exists");
 		}
+
+		UserValidationResponse response = authServiceClient.validateUser(request.getUserId());
+
+		if (!response.isExists()) {
+			throw new UserNotFoundException("User does not exist in Auth Service");
+		}
+
 		UserProfile profile = new UserProfile();
+
 		profile.setUserId(request.getUserId());
 		profile.setFullName(request.getFullName());
 		profile.setAddress(request.getAddress());
@@ -29,6 +44,7 @@ public class UserProfileService {
 		profile.setPanNumber(request.getPanNumber());
 		profile.setAadharNumber(request.getAadharNumber());
 		profile.setKycStatus(KycStatus.PENDING);
+
 		return repository.save(profile);
 	}
 
