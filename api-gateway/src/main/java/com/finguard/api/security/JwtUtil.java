@@ -4,6 +4,7 @@ import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -17,14 +18,24 @@ public class JwtUtil {
 	public boolean validateToken(String token) {
 
 		try {
-
 			Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
 
 			return true;
 
 		} catch (Exception e) {
-
 			return false;
 		}
+	}
+
+	public String extractEmail(String token) {
+
+		return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
+	}
+
+	public String extractRole(String token) {
+
+		Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+		return claims.get("role", String.class);
 	}
 }

@@ -41,4 +41,9 @@ public class AuthController {
 
 		return authService.validateUser(userId);
 	}
+
+	@PostMapping("/register-admin")
+	public ApiResponse<Void> registerAdmin(@Valid @RequestBody RegisterRequest request) {
+		return authService.registerAdmin(request);
+	}
 }

@@ -2,7 +2,8 @@ package com.finguard.api.filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;import org.springframework.core.Ordered;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -23,11 +24,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
 		String path = exchange.getRequest().getURI().getPath();
 
-		if (path.contains("/api/auth/login") || path.contains("/api/auth/register")) {
-
+		if (path.startsWith("/api/auth/")) {
 			return chain.filter(exchange);
 		}
-
 		String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -38,10 +37,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 		}
 
 		String token = authHeader.substring(7);
+		String role = jwtUtil.extractRole(token);
 
 		if (!jwtUtil.validateToken(token)) {
 
 			exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+
+			return exchange.getResponse().setComplete();
+		}
+		if (path.contains("/api/loans/") && path.endsWith("/approve") && !"ADMIN".equals(role)) {
+
+			exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
 
 			return exchange.getResponse().setComplete();
 		}
