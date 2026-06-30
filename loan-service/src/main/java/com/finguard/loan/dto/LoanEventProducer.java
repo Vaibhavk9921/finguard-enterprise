@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class LoanEventProducer {
-	private final KafkaTemplate<String, LoanApprovedEvent> kafkaTemplate;
+	private final KafkaTemplate<String, Object> kafkaTemplate;
 
-	public LoanEventProducer(KafkaTemplate<String, LoanApprovedEvent> kafkaTemplate) {
+	public LoanEventProducer(KafkaTemplate<String, Object> kafkaTemplate) {
 		super();
 		this.kafkaTemplate = kafkaTemplate;
 	}
@@ -29,4 +29,5 @@ public class LoanEventProducer {
 
 		});
 	}
+
 }

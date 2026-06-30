@@ -4,7 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-
+import com.finguard.loan.dto.LoanRejectedEventProducer;
+import com.finguard.loan.dto.LoanRejectedEvent;
 import com.finguard.loan.dto.ApplyLoanRequest;
 import com.finguard.loan.dto.LoanApprovedEvent;
 import com.finguard.loan.dto.LoanEventProducer;
@@ -20,12 +21,15 @@ public class LoanService {
 	private final LoanRepository repository;
 	private final LoanEventProducer loanEventProducer;
 	private final AuthServiceClient authServiceClient;
+	private final LoanRejectedEventProducer loanRejectedEventProducer;
 
 	public LoanService(LoanRepository repository, LoanEventProducer loanEventProducer,
-			AuthServiceClient authServiceClient) {
+			AuthServiceClient authServiceClient, LoanRejectedEventProducer loanRejectedEventProducer) {
+		super();
 		this.repository = repository;
 		this.loanEventProducer = loanEventProducer;
 		this.authServiceClient = authServiceClient;
+		this.loanRejectedEventProducer = loanRejectedEventProducer;
 	}
 
 	public Loan applyLoan(ApplyLoanRequest request) {
@@ -64,6 +68,32 @@ public class LoanService {
 		}
 		event.setEmail(response.getEmail());
 		loanEventProducer.publishLoanApprovedEvent(event);
+		return loan;
+	}
+
+	public Loan rejectLoan(Long loanId) {
+
+		Loan loan = repository.findById(loanId).orElseThrow(() -> new RuntimeException("Loan Not Found"));
+
+		loan.setStatus(LoanStatus.REJECTED);
+
+		repository.save(loan);
+
+		UserValidationResponse response = authServiceClient.validateUser(loan.getUserId());
+
+		if (!response.isExists()) {
+			throw new RuntimeException("User Not Found");
+		}
+
+		LoanRejectedEvent event = new LoanRejectedEvent();
+
+		event.setLoanId(loan.getId());
+		event.setUserId(loan.getUserId());
+		event.setLoanAmount(loan.getLoanAmount());
+		event.setEmail(response.getEmail());
+
+		loanRejectedEventProducer.publishLoanRejectedEvent(event);
+
 		return loan;
 	}
 }

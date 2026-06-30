@@ -42,4 +42,10 @@ public class LoanController {
 	public Loan approveLoan(@PathVariable("loanId") Long loanId) {
 		return loanService.approveLoan(loanId);
 	}
+
+	@PutMapping("/{loanId}/reject")
+	public Loan rejectLoan(@PathVariable("loanId") Long loanId) {
+
+		return loanService.rejectLoan(loanId);
+	}
 }
