@@ -10,17 +10,22 @@ import com.finguard.loan.dto.LoanApprovedEvent;
 import com.finguard.loan.dto.LoanEventProducer;
 import com.finguard.loan.entity.Loan;
 import com.finguard.loan.entity.LoanStatus;
+import com.finguard.loan.feign.AuthServiceClient;
 import com.finguard.loan.repository.LoanRepository;
 import com.finguard.loan.util.EmiCalculator;
+import com.finguard.loan.dto.UserValidationResponse;
 
 @Service
 public class LoanService {
 	private final LoanRepository repository;
 	private final LoanEventProducer loanEventProducer;
+	private final AuthServiceClient authServiceClient;
 
-	public LoanService(LoanRepository repository, LoanEventProducer loanEventProducer) {
+	public LoanService(LoanRepository repository, LoanEventProducer loanEventProducer,
+			AuthServiceClient authServiceClient) {
 		this.repository = repository;
 		this.loanEventProducer = loanEventProducer;
+		this.authServiceClient = authServiceClient;
 	}
 
 	public Loan applyLoan(ApplyLoanRequest request) {
@@ -50,7 +55,14 @@ public class LoanService {
 		event.setUserId(loan.getUserId());
 		event.setLoanAmount(loan.getLoanAmount());
 		event.setEmi(loan.getEmi());
-		event.setEmail("customer@test.com");
+		UserValidationResponse response = authServiceClient.validateUser(loan.getUserId());
+		System.out.println("Loan User ID : " + loan.getUserId());
+		System.out.println("Feign Response Email : " + response.getEmail());
+		System.out.println("Feign Response Valid : " + response.isExists());
+		if (!response.isExists()) {
+			throw new RuntimeException("User not Found");
+		}
+		event.setEmail(response.getEmail());
 		loanEventProducer.publishLoanApprovedEvent(event);
 		return loan;
 	}
