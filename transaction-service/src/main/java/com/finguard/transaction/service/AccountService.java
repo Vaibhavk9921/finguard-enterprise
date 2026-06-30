@@ -10,6 +10,7 @@ import com.finguard.transaction.entity.Account;
 import com.finguard.transaction.entity.Transaction;
 import com.finguard.transaction.repository.AccountRepository;
 import com.finguard.transaction.repository.TransactionRepository;
+import com.finguard.transaction.util.AccountStatus;
 
 @Service
 public class AccountService {
@@ -29,7 +30,7 @@ public class AccountService {
 		account.setUserId(userId);
 		account.setAccountNumber("FG" + System.currentTimeMillis());
 		account.setBalance(BigDecimal.ZERO);
-		account.setStatus("ACTIVE");
+		account.setStatus(AccountStatus.ACTIVE);
 		repository.save(account);
 	}
 
@@ -37,6 +38,9 @@ public class AccountService {
 		Account account = repository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Account Not Found"));
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
 			throw new RuntimeException("Invalid Amount");
+		}
+		if (AccountStatus.FROZEN.equals(account.getStatus())) {
+			throw new RuntimeException("Account is frozen. Deposit is not allowed.");
 		}
 		account.setBalance(account.getBalance().add(amount));
 		repository.save(account);
@@ -54,7 +58,9 @@ public class AccountService {
 
 		Account account = repository.findByUserId(userId)
 				.orElseThrow(() -> new RuntimeException("Account Not Found !!"));
-
+		if (AccountStatus.FROZEN.equals(account.getStatus())) {
+			throw new RuntimeException("Account is frozen. Withdrawal is not allowed.");
+		}
 		if (account.getBalance().compareTo(amount) < 0) {
 			throw new RuntimeException("Insufficient Balance");
 		}
@@ -85,5 +91,17 @@ public class AccountService {
 
 	public List<Transaction> getHistory(Long userId) {
 		return transactionRepository.findByUserId(userId);
+	}
+
+	public Account freezeAccount(Long accountId) {
+		Account account = repository.findById(accountId).orElseThrow(() -> new RuntimeException("Account Not Found"));
+		account.setStatus(AccountStatus.FROZEN);
+		return repository.save(account);
+	}
+
+	public Account unfreezeAccount(Long accountId) {
+		Account account = repository.findById(accountId).orElseThrow(() -> new RuntimeException("Account Not Found"));
+		account.setStatus(AccountStatus.ACTIVE);
+		return repository.save(account);
 	}
 }
