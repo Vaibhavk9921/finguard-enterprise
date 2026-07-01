@@ -1,0 +1,7 @@
+CREATE DATABASE IF NOT EXISTS finguard_auth;
+
+CREATE DATABASE IF NOT EXISTS finguard_user;
+
+CREATE DATABASE IF NOT EXISTS finguard_transaction;
+
+CREATE DATABASE IF NOT EXISTS finguard_loan;

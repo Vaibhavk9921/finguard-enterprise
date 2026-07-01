@@ -1,21 +1,24 @@
-# Eclipse / STS
-.metadata/
-.project
-.classpath
-.settings/
-
-# Gradle
-**/.gradle/
-**/build/
-
-# Java
-**/bin/
-**/out/
+# Environment
+.env
 
 # IDE
-.idea/
 .vscode/
-*.iml
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
+
+# Build
+**/build/
+
+# Gradle
+**/.gradle/
+
+# Eclipse
+**/.classpath
+**/.project
+**/.settings/
