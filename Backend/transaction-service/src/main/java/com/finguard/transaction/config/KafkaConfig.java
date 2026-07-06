@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -17,26 +18,30 @@ import com.finguard.transaction.dto.UserRegisteredEvent;
 @Configuration
 public class KafkaConfig {
 
-	@Bean
-	public ConsumerFactory<String, UserRegisteredEvent> consumerFactory() {
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
-	    Map<String, Object> props = new HashMap<>();
+    @Bean
+    public ConsumerFactory<String, UserRegisteredEvent> consumerFactory() {
 
-	    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-	    props.put(ConsumerConfig.GROUP_ID_CONFIG, "transaction-service-group");
-	    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        Map<String, Object> props = new HashMap<>();
 
-	    props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-	    props.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-	            "com.finguard.transaction.dto.UserRegisteredEvent");
-	    props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "transaction-service-group");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-	    return new DefaultKafkaConsumerFactory<>(
-	            props,
-	            new StringDeserializer(),
-	            new JsonDeserializer<>(UserRegisteredEvent.class)
-	    );
-	}
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
+                "com.finguard.transaction.dto.UserRegisteredEvent");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                props,
+                new StringDeserializer(),
+                new JsonDeserializer<>(UserRegisteredEvent.class)
+        );
+    }
+
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, UserRegisteredEvent>
     kafkaListenerContainerFactory() {

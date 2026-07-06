@@ -1,22 +1,274 @@
-version: "3.9"
-
 services:
 
+  # ==========================
+  # MySQL
+  # ==========================
   mysql:
-    image: mysql:8.4
+    image: mysql:8.0
     container_name: finguard-mysql
+    restart: unless-stopped
 
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: finguard_auth
 
     ports:
-      - "3306:3306"
+      - "3307:3306"
 
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./scripts/init-mysql.sql:/docker-entrypoint-initdb.d/init-mysql.sql
 
+    networks:
+      - finguard-network
+
+  # ==========================
+  # Kafka (KRaft)
+  # ==========================
+  kafka:
+    image: apache/kafka:latest
+    container_name: kafka
     restart: unless-stopped
+
+    ports:
+      - "9092:9092"
+
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # Kafka UI
+  # ==========================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: unless-stopped
+
+    ports:
+      - "8088:8080"
+
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+    depends_on:
+      - kafka
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # Eureka Server
+  # ==========================
+  eureka-server:
+    build:
+      context: ./Backend/eureka-server
+
+    container_name: eureka-server
+    restart: unless-stopped
+
+    ports:
+      - "8761:8761"
+
+    env_file:
+      - .env
+
+    depends_on:
+      - mysql
+      - kafka
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # Auth Service
+  # ==========================
+  auth-service:
+    build:
+      context: ./Backend/auth-service
+
+    container_name: auth-service
+    restart: unless-stopped
+
+    ports:
+      - "8081:8081"
+
+    env_file:
+      - .env
+
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/finguard_auth
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_URL: http://eureka-server:8761/eureka
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka-server
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # User Service
+  # ==========================
+  user-service:
+    build:
+      context: ./Backend/user-service
+
+    container_name: user-service
+    restart: unless-stopped
+
+    ports:
+      - "8082:8082"
+
+    env_file:
+      - .env
+
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/finguard_user
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_URL: http://eureka-server:8761/eureka
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka-server
+      - auth-service
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # Transaction Service
+  # ==========================
+  transaction-service:
+    build:
+      context: ./Backend/transaction-service
+
+    container_name: transaction-service
+    restart: unless-stopped
+
+    ports:
+      - "8083:8083"
+
+    env_file:
+      - .env
+
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/finguard_transaction
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_URL: http://eureka-server:8761/eureka
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka-server
+      - auth-service
+      - user-service
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # Loan Service
+  # ==========================
+  loan-service:
+    build:
+      context: ./Backend/loan-service
+
+    container_name: loan-service
+    restart: unless-stopped
+
+    ports:
+      - "8085:8085"
+
+    env_file:
+      - .env
+
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/finguard_loan
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_URL: http://eureka-server:8761/eureka
+
+    depends_on:
+      - mysql
+      - kafka
+      - eureka-server
+      - transaction-service
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # Notification Service
+  # ==========================
+  notification-service:
+    build:
+      context: ./Backend/notification-service
+
+    container_name: notification-service
+    restart: unless-stopped
+
+    ports:
+      - "8084:8084"
+
+    env_file:
+      - .env
+
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_URL: http://eureka-server:8761/eureka
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+    depends_on:
+      - kafka
+      - eureka-server
+
+    networks:
+      - finguard-network
+
+  # ==========================
+  # API Gateway
+  # ==========================
+  api-gateway:
+    build:
+      context: ./Backend/api-gateway
+
+    container_name: api-gateway
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    env_file:
+      - .env
+
+    environment:
+      EUREKA_URL: http://eureka-server:8761/eureka
+
+    depends_on:
+      - auth-service
+      - user-service
+      - transaction-service
+      - loan-service
+      - notification-service
+      - eureka-server
+
+    networks:
+      - finguard-network
 
 volumes:
   mysql-data:
+
+networks:
+  finguard-network:

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -17,25 +18,29 @@ import com.finguard.auth.dto.UserRegisteredEvent;
 @Configuration
 public class KafkaProducerConfig {
 
-	@Bean
-	public ProducerFactory<String, UserRegisteredEvent> producerFactory() {
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
-		Map<String, Object> config = new HashMap<>();
+    @Bean
+    public ProducerFactory<String, UserRegisteredEvent> producerFactory() {
 
-		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        Map<String, Object> config = new HashMap<>();
 
-		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
-		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-				org.springframework.kafka.support.serializer.JsonSerializer.class);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class);
 
-		config.put(org.springframework.kafka.support.serializer.JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                JsonSerializer.class);
 
-		return new DefaultKafkaProducerFactory<>(config);
-	}
+        config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
 
-	@Bean
-	public KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate() {
-		return new KafkaTemplate<>(producerFactory());
-	}
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
 }
