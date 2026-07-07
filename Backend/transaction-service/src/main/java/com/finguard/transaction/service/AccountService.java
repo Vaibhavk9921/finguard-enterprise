@@ -6,11 +6,15 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.finguard.transaction.dto.LoanApprovedEvent;
 import com.finguard.transaction.entity.Account;
 import com.finguard.transaction.entity.Transaction;
 import com.finguard.transaction.repository.AccountRepository;
 import com.finguard.transaction.repository.TransactionRepository;
 import com.finguard.transaction.util.AccountStatus;
+
+import jakarta.transaction.Transactional;
+
 import com.finguard.transaction.exception.AccountFrozenException;
 import com.finguard.transaction.exception.AccountNotFoundException;
 import com.finguard.transaction.exception.InsufficientBalanceException;
@@ -106,5 +110,24 @@ public class AccountService {
 		Account account = repository.findById(accountId).orElseThrow(AccountNotFoundException::new);
 		account.setStatus(AccountStatus.ACTIVE);
 		return repository.save(account);
+	}
+
+	@Transactional
+	public void creditLoan(LoanApprovedEvent event) {
+		Account account = repository.findByUserId(event.getUserId()).orElseThrow(AccountNotFoundException::new);
+		if (AccountStatus.FROZEN.equals(account.getStatus())) {
+			throw new AccountFrozenException();
+		}
+		account.setBalance(account.getBalance().add(event.getLoanAmount()));
+		repository.save(account);
+		Transaction transaction = new Transaction();
+		transaction.setUserId(event.getUserId());
+		transaction.setAccountNumber(account.getAccountNumber());
+		transaction.setTransactionType("LOAN_CREDIT");
+		transaction.setAmount(event.getLoanAmount());
+		transaction.setTransactionDate(LocalDateTime.now());
+		transactionRepository.save(transaction);
+		System.out.println("LOAN AMOUNT CREDITED :" + event.getLoanAmount());
+
 	}
 }
