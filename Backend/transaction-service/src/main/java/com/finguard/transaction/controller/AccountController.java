@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.finguard.transaction.dto.TransactionRequest;
+import com.finguard.transaction.dto.TransferRequest;
 import com.finguard.transaction.entity.Account;
 import com.finguard.transaction.entity.Transaction;
 import com.finguard.transaction.service.AccountService;
@@ -53,5 +54,11 @@ public class AccountController {
 	@PutMapping("/{accountId}/unfreeze")
 	public Account unFreezeAccount(@PathVariable("accountId") Long accountId) {
 		return accountService.unfreezeAccount(accountId);
+	}
+
+	@PostMapping("/transfer")
+	public String transfer(@RequestBody TransferRequest request) {
+		accountService.transfer(request.getFromUserId(), request.getToUserId(), request.getAmount());
+		return "Fund Transfer Successful";
 	}
 }

@@ -3,18 +3,14 @@ package com.finguard.transaction.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import com.finguard.transaction.dto.LoanApprovedEvent;
 import com.finguard.transaction.entity.Account;
 import com.finguard.transaction.entity.Transaction;
 import com.finguard.transaction.repository.AccountRepository;
 import com.finguard.transaction.repository.TransactionRepository;
 import com.finguard.transaction.util.AccountStatus;
-
 import jakarta.transaction.Transactional;
-
 import com.finguard.transaction.exception.AccountFrozenException;
 import com.finguard.transaction.exception.AccountNotFoundException;
 import com.finguard.transaction.exception.InsufficientBalanceException;
@@ -129,5 +125,61 @@ public class AccountService {
 		transactionRepository.save(transaction);
 		System.out.println("LOAN AMOUNT CREDITED :" + event.getLoanAmount());
 
+	}
+
+	@Transactional
+	public void transfer(Long fromUserId, Long toUserId, BigDecimal amount) {
+
+		if (fromUserId.equals(toUserId)) {
+			throw new RuntimeException("Cannot transfer to the same account.");
+		}
+
+		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new InvalidAmountException();
+		}
+
+		Account sender = repository.findByUserId(fromUserId).orElseThrow(AccountNotFoundException::new);
+		Account receiver = repository.findByUserId(toUserId).orElseThrow(AccountNotFoundException::new);
+		if (AccountStatus.FROZEN.equals(sender.getStatus())) {
+			throw new AccountFrozenException();
+		}
+		if (AccountStatus.FROZEN.equals(receiver.getStatus())) {
+			throw new AccountFrozenException();
+		}
+		if (sender.getBalance().compareTo(amount) < 0) {
+			throw new InsufficientBalanceException();
+		}
+		sender.setBalance(sender.getBalance().subtract(amount));
+		receiver.setBalance(receiver.getBalance().add(amount));
+		repository.save(sender);
+		repository.save(receiver);
+		Transaction debitTransaction = new Transaction();
+		debitTransaction.setUserId(fromUserId);
+		debitTransaction.setAccountNumber(sender.getAccountNumber());
+		debitTransaction.setAmount(amount);
+		debitTransaction.setTransactionType("TRANSFER_OUT");
+		debitTransaction.setTransactionDate(LocalDateTime.now());
+		transactionRepository.save(debitTransaction);
+		Transaction creditTransaction = new Transaction();
+		creditTransaction.setUserId(toUserId);
+		creditTransaction.setAccountNumber(receiver.getAccountNumber());
+		creditTransaction.setAmount(amount);
+		creditTransaction.setTransactionType("TRANSFER_IN");
+		creditTransaction.setTransactionDate(LocalDateTime.now());
+		transactionRepository.save(creditTransaction);
+		System.out.println("--------------------------------");
+		System.out.println("FUND TRANSFER SUCCESSFUL");
+		System.out.println("From User : " + fromUserId);
+		System.out.println("To User   : " + toUserId);
+		System.out.println("Amount    : " + amount);
+		System.out.println("--------------------------------");
+	}
+
+	public List<Account> getAllAccounts() {
+		return repository.findAll();
+	}
+
+	public List<Transaction> getallTransactions() {
+		return transactionRepository.findAll();
 	}
 }

@@ -1,5 +1,7 @@
 package com.finguard.auth.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -7,6 +9,7 @@ import com.finguard.auth.dto.ApiResponse;
 import com.finguard.auth.dto.LoginRequest;
 import com.finguard.auth.dto.RegisterRequest;
 import com.finguard.auth.dto.UserRegisteredEvent;
+import com.finguard.auth.dto.UserResponse;
 import com.finguard.auth.dto.UserValidationResponse;
 import com.finguard.auth.entity.Role;
 import com.finguard.auth.entity.User;
@@ -108,5 +111,12 @@ public class AuthService {
 		}
 
 		return new UserValidationResponse(user.getId(), user.getEmail(), true);
+	}
+
+	public List<UserResponse> getAllUsers() {
+
+		return userRepository.findAll().stream()
+				.map(user -> new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name()))
+				.toList();
 	}
 }

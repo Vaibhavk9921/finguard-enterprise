@@ -1,8 +1,5 @@
 services:
 
-  # ==========================
-  # MySQL
-  # ==========================
   mysql:
     image: mysql:8.0
     container_name: finguard-mysql
@@ -21,9 +18,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # Kafka (KRaft)
-  # ==========================
   kafka:
     image: apache/kafka:latest
     container_name: kafka
@@ -44,9 +38,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # Kafka UI
-  # ==========================
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -65,9 +56,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # Eureka Server
-  # ==========================
   eureka-server:
     build:
       context: ./Backend/eureka-server
@@ -88,9 +76,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # Auth Service
-  # ==========================
   auth-service:
     build:
       context: ./Backend/auth-service
@@ -117,9 +102,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # User Service
-  # ==========================
   user-service:
     build:
       context: ./Backend/user-service
@@ -147,9 +129,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # Transaction Service
-  # ==========================
   transaction-service:
     build:
       context: ./Backend/transaction-service
@@ -178,9 +157,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # Loan Service
-  # ==========================
   loan-service:
     build:
       context: ./Backend/loan-service
@@ -208,9 +184,7 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # Notification Service
-  # ==========================
+
   notification-service:
     build:
       context: ./Backend/notification-service
@@ -237,9 +211,6 @@ services:
     networks:
       - finguard-network
 
-  # ==========================
-  # API Gateway
-  # ==========================
   api-gateway:
     build:
       context: ./Backend/api-gateway

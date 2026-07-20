@@ -96,4 +96,8 @@ public class LoanService {
 
 		return loan;
 	}
+
+	public List<Loan> getAllLoans() {
+		return repository.findAll();
+	}
 }

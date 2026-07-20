@@ -8,6 +8,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 @EnableKafka
 @SpringBootApplication
 @EnableDiscoveryClient
+
 public class AuthServiceApplication {
 
 	public static void main(String[] args) {
