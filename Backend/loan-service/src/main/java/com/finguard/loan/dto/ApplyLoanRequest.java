@@ -2,10 +2,20 @@ package com.finguard.loan.dto;
 
 import java.math.BigDecimal;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class ApplyLoanRequest {
 	private Long userId;
+	@NotBlank(message = "Loan type is Required")
 	private String loanType;
+	@NotNull(message = "Loan amount is Required")
+	@DecimalMin(value = "1000.0", message = "minimum loan amount is 1000")
 	private BigDecimal loanAmount;
+	@NotNull(message = "Tenure is Required")
+	@Min(value = 1, message = "Tenure must be at least 1 month ")
 	private Integer tenureMonths;
 
 	public ApplyLoanRequest() {

@@ -2,6 +2,8 @@ package com.finguard.auth.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
 	private final UserEventProducer userEventProducer;
+	private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
 	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
 			UserEventProducer userEventProducer) {
@@ -42,7 +45,7 @@ public class AuthService {
 		}
 
 		User user = new User();
-
+		log.info("Register request received for email : {}", request.getEmail());
 		user.setName(request.getName());
 		user.setEmail(request.getEmail());
 		user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -60,6 +63,7 @@ public class AuthService {
 
 		userEventProducer.publishUserRegisteredEvent(event);
 		System.out.println("EVENT PUBLISHED SUCCESSFULLY");
+		log.info("User Registered Sucessfully with email :{}", request.getEmail());
 		return new ApiResponse<>(true, "User Registered Successfully", null);
 	}
 
@@ -90,15 +94,15 @@ public class AuthService {
 	}
 
 	public String login(LoginRequest request) {
-
+		log.info("Login Request Recieved for Email: {}", request.getEmail());
 		User user = userRepository.findByEmail(request.getEmail())
 				.orElseThrow(() -> new InvalidCredentialsException("Invalid Credentials"));
 
 		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-
+			log.error("Invalid login attempt for email: {}", request.getEmail());
 			throw new InvalidCredentialsException("Invalid Credentials");
 		}
-
+		log.info("JWT Generated Sucessfully for User :{}", request.getEmail());
 		return jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 	}
 

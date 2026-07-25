@@ -27,8 +27,13 @@ public class SecurityConfig {
 
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-				.authorizeHttpRequests(
-						auth -> auth.requestMatchers("/api/auth/**").permitAll().anyRequest().authenticated())
+				.authorizeHttpRequests(auth -> auth
+
+						.requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/register-admin",
+								"/api/auth/hello", "/actuator/**")
+						.permitAll()
+
+						.anyRequest().authenticated())
 
 				.formLogin(form -> form.disable())
 

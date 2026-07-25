@@ -3,6 +3,8 @@ package com.finguard.loan.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.finguard.loan.dto.LoanRejectedEventProducer;
 import com.finguard.loan.dto.LoanRejectedEvent;
@@ -22,6 +24,7 @@ public class LoanService {
 	private final LoanEventProducer loanEventProducer;
 	private final AuthServiceClient authServiceClient;
 	private final LoanRejectedEventProducer loanRejectedEventProducer;
+	private static final Logger log = LoggerFactory.getLogger(LoanService.class);
 
 	public LoanService(LoanRepository repository, LoanEventProducer loanEventProducer,
 			AuthServiceClient authServiceClient, LoanRejectedEventProducer loanRejectedEventProducer) {
@@ -43,6 +46,7 @@ public class LoanService {
 				EmiCalculator.calculateEmi(request.getLoanAmount(), loan.getInterestRate(), loan.getTenureMonths()));
 		loan.setStatus(LoanStatus.PENDING);
 		loan.setAppliedDate(LocalDateTime.now());
+		log.info("Loan Application recieved for User {}", request.getUserId());
 		return repository.save(loan);
 	}
 
@@ -68,6 +72,7 @@ public class LoanService {
 		}
 		event.setEmail(response.getEmail());
 		loanEventProducer.publishLoanApprovedEvent(event);
+		log.info("Loan Approved Succesfully ");
 		return loan;
 	}
 
@@ -93,6 +98,7 @@ public class LoanService {
 		event.setEmail(response.getEmail());
 
 		loanRejectedEventProducer.publishLoanRejectedEvent(event);
+		log.info("Loan Rejected !!");
 
 		return loan;
 	}

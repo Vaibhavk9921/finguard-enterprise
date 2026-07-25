@@ -3,6 +3,9 @@ package com.finguard.transaction.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.finguard.transaction.dto.LoanApprovedEvent;
 import com.finguard.transaction.entity.Account;
@@ -20,6 +23,7 @@ import com.finguard.transaction.exception.InvalidAmountException;
 public class AccountService {
 	private final AccountRepository repository;
 	private final TransactionRepository transactionRepository;
+	private static final Logger log = LoggerFactory.getLogger(AccountService.class);
 
 	public AccountService(AccountRepository repository, TransactionRepository transactionRepository) {
 		this.repository = repository;
@@ -54,7 +58,9 @@ public class AccountService {
 		tx.setTransactionType("DEPOSIT");
 		tx.setAmount(amount);
 		tx.setTransactionDate(LocalDateTime.now());
+		log.info("Deposit request: Account ={}", account, amount);
 		transactionRepository.save(tx);
+		log.info("Deposit Completed Sucessfully.");
 		return account;
 	}
 
@@ -65,6 +71,7 @@ public class AccountService {
 			throw new AccountFrozenException();
 		}
 		if (account.getBalance().compareTo(amount) < 0) {
+			log.warn("Withdraw failed due to insufficient balance.");
 			throw new InsufficientBalanceException();
 		}
 		if (amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -80,6 +87,7 @@ public class AccountService {
 		tx.setAccountNumber(account.getAccountNumber());
 		tx.setTransactionType("WITHDRAW");
 		tx.setAmount(amount);
+		log.info("Withdraw request: Account={},Amount={}", account, amount);
 		tx.setTransactionDate(LocalDateTime.now());
 
 		transactionRepository.save(tx);
@@ -149,6 +157,7 @@ public class AccountService {
 		if (sender.getBalance().compareTo(amount) < 0) {
 			throw new InsufficientBalanceException();
 		}
+		log.info("Transfer request from {} to {} Amount={}", sender, receiver, amount);
 		sender.setBalance(sender.getBalance().subtract(amount));
 		receiver.setBalance(receiver.getBalance().add(amount));
 		repository.save(sender);
@@ -167,6 +176,7 @@ public class AccountService {
 		creditTransaction.setTransactionType("TRANSFER_IN");
 		creditTransaction.setTransactionDate(LocalDateTime.now());
 		transactionRepository.save(creditTransaction);
+		log.info("Transfer Completed Sucessfully.");
 		System.out.println("--------------------------------");
 		System.out.println("FUND TRANSFER SUCCESSFUL");
 		System.out.println("From User : " + fromUserId);

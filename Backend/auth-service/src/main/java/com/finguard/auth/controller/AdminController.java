@@ -2,11 +2,13 @@ package com.finguard.auth.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.finguard.auth.common.ApiResponse;
 import com.finguard.auth.dto.UserResponse;
 import com.finguard.auth.dto.UserStatsResponse;
 import com.finguard.auth.dto.dashboard.DashboardResponse;
@@ -41,7 +43,8 @@ public class AdminController {
 	}
 
 	@GetMapping("/dashboard")
-	public DashboardResponse getDashboard() {
-		return dashboardService.getDashboard();
+	public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
+		DashboardResponse response = dashboardService.getDashboard();
+		return ResponseEntity.ok(ApiResponse.success("Dashboard Fetched Successfully", response));
 	}
 }
