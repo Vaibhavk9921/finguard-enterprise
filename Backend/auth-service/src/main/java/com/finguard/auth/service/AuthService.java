@@ -15,6 +15,7 @@ import com.finguard.auth.dto.UserResponse;
 import com.finguard.auth.dto.UserValidationResponse;
 import com.finguard.auth.entity.Role;
 import com.finguard.auth.entity.User;
+import com.finguard.auth.exception.EmailAlreadyExistsException;
 import com.finguard.auth.exception.InvalidCredentialsException;
 import com.finguard.auth.kafka.UserEventProducer;
 import com.finguard.auth.repository.UserRepository;
@@ -70,7 +71,7 @@ public class AuthService {
 	public ApiResponse<Void> registerAdmin(RegisterRequest request) {
 
 		if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-			throw new RuntimeException("Email Already Exists");
+			throw new EmailAlreadyExistsException("Email Already Exists");
 		}
 
 		User user = new User();
