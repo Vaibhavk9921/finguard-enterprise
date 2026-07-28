@@ -1,8 +1,10 @@
 package com.finguard.auth.dto.dashboard;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class DashboardResponse {
+public class DashboardResponse implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private long totalUsers;
 	private long totalAccounts;
 	private BigDecimal totalBalance;
@@ -80,6 +82,10 @@ public class DashboardResponse {
 
 	public void setRejectedLoans(long rejectedLoans) {
 		this.rejectedLoans = rejectedLoans;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 
 }

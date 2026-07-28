@@ -1,5 +1,6 @@
 package com.finguard.auth.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.finguard.auth.client.LoanServiceClient;
@@ -22,9 +23,9 @@ public class DashboardService {
 		this.loanClient = loanClient;
 	}
 
+	@Cacheable("dashboard")
 	public DashboardResponse getDashboard() {
 		TransactionStatsResponse transactionStats = transactionClient.getTransactionStats();
-
 		LoanStatsResponse loanStats = loanClient.getLoanStats();
 
 		DashboardResponse response = new DashboardResponse();
