@@ -3,8 +3,6 @@ package com.finguard.auth.service;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.finguard.auth.client.LoanServiceClient;
-import com.finguard.auth.client.TransactionServiceClient;
 import com.finguard.auth.dto.dashboard.DashboardResponse;
 import com.finguard.auth.dto.dashboard.LoanStatsResponse;
 import com.finguard.auth.dto.dashboard.TransactionStatsResponse;
@@ -12,21 +10,21 @@ import com.finguard.auth.repository.UserRepository;
 
 @Service
 public class DashboardService {
-	private final TransactionServiceClient transactionClient;
-	private final UserRepository userRepository;
-	private final LoanServiceClient loanClient;
 
-	public DashboardService(UserRepository userRepository, TransactionServiceClient transactionClient,
-			LoanServiceClient loanClient) {
+	private final UserRepository userRepository;
+	private final DashboardClientService dashboardClientService;
+
+	public DashboardService(UserRepository userRepository, DashboardClientService dashboardClientService) {
 		this.userRepository = userRepository;
-		this.transactionClient = transactionClient;
-		this.loanClient = loanClient;
+		this.dashboardClientService = dashboardClientService;
 	}
 
 	@Cacheable("dashboard")
 	public DashboardResponse getDashboard() {
-		TransactionStatsResponse transactionStats = transactionClient.getTransactionStats();
-		LoanStatsResponse loanStats = loanClient.getLoanStats();
+
+		TransactionStatsResponse transactionStats = dashboardClientService.getTransactionStats();
+
+		LoanStatsResponse loanStats = dashboardClientService.getLoanStats();
 
 		DashboardResponse response = new DashboardResponse();
 

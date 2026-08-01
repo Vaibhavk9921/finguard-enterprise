@@ -12,8 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.finguard.auth.client.LoanServiceClient;
-import com.finguard.auth.client.TransactionServiceClient;
 import com.finguard.auth.dto.dashboard.DashboardResponse;
 import com.finguard.auth.dto.dashboard.LoanStatsResponse;
 import com.finguard.auth.dto.dashboard.TransactionStatsResponse;
@@ -23,13 +21,10 @@ import com.finguard.auth.repository.UserRepository;
 class DashboardServiceTest {
 
 	@Mock
-	private TransactionServiceClient transactionClient;
-
-	@Mock
-	private LoanServiceClient loanClient;
-
-	@Mock
 	private UserRepository userRepository;
+
+	@Mock
+	private DashboardClientService dashboardClientService;
 
 	@InjectMocks
 	private DashboardService dashboardService;
@@ -55,13 +50,14 @@ class DashboardServiceTest {
 	void shouldReturnDashboardStatistics() {
 
 		when(userRepository.count()).thenReturn(100L);
-		when(transactionClient.getTransactionStats()).thenReturn(transactionStats);
-		when(loanClient.getLoanStats()).thenReturn(loanStats);
+
+		when(dashboardClientService.getTransactionStats()).thenReturn(transactionStats);
+
+		when(dashboardClientService.getLoanStats()).thenReturn(loanStats);
 
 		DashboardResponse response = dashboardService.getDashboard();
 
 		assertEquals(100L, response.getTotalUsers());
-
 		assertEquals(10L, response.getTotalAccounts());
 		assertEquals(new BigDecimal("250000"), response.getTotalBalance());
 		assertEquals(75L, response.getTotalTransactions());
@@ -71,7 +67,7 @@ class DashboardServiceTest {
 		assertEquals(8L, response.getRejectedLoans());
 
 		verify(userRepository).count();
-		verify(transactionClient).getTransactionStats();
-		verify(loanClient).getLoanStats();
+		verify(dashboardClientService).getTransactionStats();
+		verify(dashboardClientService).getLoanStats();
 	}
 }

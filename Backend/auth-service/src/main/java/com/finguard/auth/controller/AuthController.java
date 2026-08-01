@@ -9,6 +9,10 @@ import com.finguard.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Authentication", description = "Authentication & Authorization APIs")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -24,12 +28,14 @@ public class AuthController {
 		return "Auth Service Running Successfully";
 	}
 
+	@Operation(summary = "Register User", description = "Register a new user")
 	@PostMapping("/register")
 	public ApiResponse<Void> register(@Valid @RequestBody RegisterRequest request) {
 
 		return authService.register(request);
 	}
 
+	@Operation(summary = "Login", description = "Authenticate user and generate JWT token")
 	@PostMapping("/login")
 	public LoginResponse login(@Valid @RequestBody LoginRequest request) {
 		String token = authService.login(request);
