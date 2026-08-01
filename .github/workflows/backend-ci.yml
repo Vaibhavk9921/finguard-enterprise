@@ -2,32 +2,113 @@ name: FinGuard Backend CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  build-auth-service:
-    runs-on: ubuntu-latest
 
+  auth-service:
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: Backend/auth-service
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
 
-      - name: Grant Execute Permission
-        run: chmod +x gradlew
+  user-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend/user-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
 
-      - name: Build Auth Service
-        run: ./gradlew clean build
+  transaction-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend/transaction-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
+
+  notification-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend/notification-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
+
+  loan-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend/loan-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
+
+  api-gateway:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend/api-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
+
+  eureka-server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend/eureka-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
