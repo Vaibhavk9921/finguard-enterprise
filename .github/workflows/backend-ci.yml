@@ -1,0 +1,33 @@
+name: FinGuard Backend CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-auth-service:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Backend/auth-service
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Grant Execute Permission
+        run: chmod +x gradlew
+
+      - name: Build Auth Service
+        run: ./gradlew clean build
